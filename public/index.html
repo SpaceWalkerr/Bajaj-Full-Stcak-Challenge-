@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/styles.css" />
@@ -15,86 +15,80 @@
   <body>
     <div class="page-container">
       <header class="header">
+        <div class="header-glow"></div>
         <div class="header-content">
           <div class="logo-section">
-            <div class="logo">⚡</div>
-            <div>
+            <div class="logo-box">
+              <div class="logo-inner">�</div>
+            </div>
+            <div class="logo-text">
               <h1 class="app-title">Hierarchy Analyzer</h1>
-              <p class="app-subtitle">Advanced Graph Processing Engine</p>
             </div>
           </div>
-          <p class="header-description">
-            Transform node relationships into structured hierarchies with cycle detection
-          </p>
         </div>
       </header>
 
       <main class="main-content">
         <div class="container">
-          <div class="grid">
-            <!-- Input Section -->
-            <section class="input-section">
-              <div class="section-header">
-                <h2>Input Data</h2>
-                <span class="section-badge">Format: X→Y</span>
+          <div class="layout-grid">
+            <section class="input-panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Input</h2>
+                  <p class="panel-hint">Define node relationships</p>
+                </div>
+                <button id="sample-btn" class="btn-secondary" title="Load sample data to see how it works">Sample Data</button>
               </div>
 
-              <div class="input-group">
-                <label for="node-input" class="input-label">Enter node relationships</label>
+              <div class="input-wrapper">
                 <textarea
                   id="node-input"
-                  class="code-input"
-                  placeholder="A->B&#10;A->C&#10;B->D&#10;...&#10;&#10;Enter one edge per line"
+                  class="input-textarea"
+                  placeholder="A->B&#10;A->C&#10;B->D&#10;...&#10;&#10;Enter relationships (one per line)"
                   spellcheck="false"
                 >A->B
 A->C
 B->D</textarea>
+                <div class="input-footer">
+                  <span class="format-hint">Format: <code>X->Y</code> (uppercase letters)</span>
+                </div>
               </div>
 
-              <div class="button-group">
-                <button id="submit-btn" class="btn btn-primary">
-                  <span class="btn-icon">⚙️</span> Analyze
-                </button>
-                <button id="sample-btn" class="btn btn-secondary">
-                  <span class="btn-icon">📋</span> Load Sample
-                </button>
-              </div>
+              <button id="submit-btn" class="btn-primary">Analyze</button>
 
-              <p class="input-hint">
-                💡 Valid format: Single uppercase letters (A-Z) only. Example: <code>A->B</code>
-              </p>
               <div id="status" class="status-message" aria-live="polite"></div>
             </section>
 
-            <!-- Output Section -->
-            <section class="output-section">
-              <div class="section-header">
-                <h2>Analysis Results</h2>
+            <section class="output-panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Results</h2>
+                  <p class="panel-hint">Analysis output</p>
+                </div>
               </div>
 
               <div id="summary-cards" class="summary-grid"></div>
 
-              <div class="tabs-container">
-                <button class="tab-btn active" data-tab="hierarchies">Trees & Cycles</button>
-                <button class="tab-btn" data-tab="errors">Errors & Duplicates</button>
-                <button class="tab-btn" data-tab="json">Raw JSON</button>
-              </div>
-
-              <!-- Trees & Cycles Tab -->
-              <div id="hierarchies" class="tab-content active"></div>
-
-              <!-- Errors Tab -->
-              <div id="errors-content" class="tab-content">
-                <div class="errors-grid">
-                  <div id="invalid-entries" class="error-box"></div>
-                  <div id="duplicate-edges" class="error-box"></div>
+              <div class="tabs-wrapper">
+                <div class="tabs-nav">
+                  <button class="tab-btn active" data-tab="hierarchies">Trees & Cycles</button>
+                  <button class="tab-btn" data-tab="errors">Issues</button>
+                  <button class="tab-btn" data-tab="json">JSON</button>
                 </div>
-              </div>
 
-              <!-- JSON Tab -->
-              <div id="json-content" class="tab-content">
-                <div class="json-viewer">
-                  <pre id="raw-json">{}</pre>
+                <div id="hierarchies-content" class="tab-content active"></div>
+
+                <div id="errors-content" class="tab-content">
+                  <div class="errors-grid">
+                    <div id="invalid-entries" class="error-box"></div>
+                    <div id="duplicate-edges" class="error-box"></div>
+                  </div>
+                </div>
+
+                <div id="json-content" class="tab-content">
+                  <div class="json-viewer">
+                    <pre id="raw-json">{}</pre>
+                  </div>
                 </div>
               </div>
             </section>
@@ -103,7 +97,7 @@ B->D</textarea>
       </main>
 
       <footer class="footer">
-        <p>Bajaj Full Stack Challenge 2024 • <a href="https://srmist.edu.in">SRM Institute</a></p>
+        <p>Made by Suraj Nandan</p>
       </footer>
     </div>
 

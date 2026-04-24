@@ -1,15 +1,13 @@
-// ===== DOM Elements =====
 const nodeInput = document.getElementById("node-input");
 const submitBtn = document.getElementById("submit-btn");
 const sampleBtn = document.getElementById("sample-btn");
 const statusEl = document.getElementById("status");
 const rawJsonEl = document.getElementById("raw-json");
 const summaryCardsEl = document.getElementById("summary-cards");
-const hierarchiesEl = document.getElementById("hierarchies");
+const hierarchiesEl = document.getElementById("hierarchies-content");
 const tabBtns = document.querySelectorAll(".tab-btn");
 const tabContents = document.querySelectorAll(".tab-content");
 
-// Sample input data
 const sampleInput = `A->B
 A->C
 B->D
@@ -22,56 +20,47 @@ P->Q
 Q->R
 G->H
 G->H
-G->I
-hello
-1->2
-A->`;
+G->I`;
 
-// ===== Utility Functions =====
 function stringify(value) {
   return JSON.stringify(value, null, 2);
 }
 
-// ===== Tab Management =====
 function switchTab(tabName) {
-  // Hide all tabs
   tabContents.forEach(tab => tab.classList.remove("active"));
-  
-  // Deactivate all buttons
   tabBtns.forEach(btn => btn.classList.remove("active"));
   
-  // Show selected tab
   const selectedTab = document.getElementById(tabName + "-content");
   if (selectedTab) {
     selectedTab.classList.add("active");
   }
   
-  // Activate selected button
-  event.target.classList.add("active");
+  const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
+  if (activeBtn) {
+    activeBtn.classList.add("active");
+  }
 }
 
-// Tab button event listeners
 tabBtns.forEach(btn => {
   btn.addEventListener("click", (e) => {
-    const tabName = e.target.dataset.tab;
+    const tabName = e.target.closest(".tab-btn").dataset.tab;
     switchTab(tabName);
   });
 });
 
-// ===== Render Functions =====
 function buildSummaryCards(response) {
   const cards = [
-    ["Total Trees", response.summary.total_trees],
-    ["Total Cycles", response.summary.total_cycles],
-    ["Largest Root", response.summary.largest_tree_root || "-"]
+    { label: "Total Trees", value: response.summary.total_trees },
+    { label: "Total Cycles", value: response.summary.total_cycles },
+    { label: "Largest Root", value: response.summary.largest_tree_root || "-" }
   ];
 
   summaryCardsEl.innerHTML = cards
     .map(
-      ([label, value]) => `
+      card => `
         <div class="summary-card">
-          <div class="summary-label">${label}</div>
-          <div class="summary-value">${value}</div>
+          <div class="summary-value">${card.value}</div>
+          <div class="summary-label">${card.label}</div>
         </div>
       `
     )
@@ -79,97 +68,114 @@ function buildSummaryCards(response) {
 }
 
 function renderHierarchies(response) {
+  if (!response.hierarchies || response.hierarchies.length === 0) {
+    hierarchiesEl.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; color: var(--text-tertiary);">
+        <p style="font-size: 14px;">No hierarchies to display</p>
+      </div>
+    `;
+    return;
+  }
+
   const hierarchyMarkup = response.hierarchies
     .map((item) => {
-      const statusClass = item.has_cycle ? "warn" : "good";
-      const statusText = item.has_cycle ? "🔄 Cycle Detected" : "✓ Valid Tree";
-      const depthInfo = item.has_cycle 
-        ? "Cyclic structure - no linear depth" 
-        : `Depth: <strong>${item.depth}</strong> nodes`;
+      const badge = item.has_cycle 
+        ? '<span class="card-badge badge-cycle">CYCLE</span>'
+        : '<span class="card-badge badge-tree">TREE</span>';
+      
+      const depthLine = item.has_cycle 
+        ? "Status: Cyclic structure"
+        : `Depth: ${item.depth} level${item.depth !== 1 ? 's' : ''}`;
 
       return `
         <div class="hierarchy-card">
-          <div class="hierarchy-top">
-            <h3>Root: <strong>${item.root}</strong></h3>
-            <span class="pill ${statusClass}">${statusText}</span>
+          <div class="card-header">
+            <div class="card-title">Root: <strong>${item.root}</strong></div>
+            ${badge}
           </div>
-          <div class="hierarchy-meta">${depthInfo}</div>
-          <pre>${stringify(item.tree)}</pre>
+          <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+            ${depthLine}
+          </div>
+          <div class="card-content">${stringify(item.tree)}</div>
         </div>
       `;
     })
     .join("");
 
-  hierarchiesEl.innerHTML = hierarchyMarkup || `
-    <div class="hierarchy-card">
-      <p style="text-align: center; color: #9ca3af;">No hierarchies found. Enter some edges above!</p>
-    </div>
-  `;
+  hierarchiesEl.innerHTML = hierarchyMarkup;
 }
 
 function renderErrors(response) {
-  const invalidMarkup = response.invalid_entries.length > 0
-    ? `<pre>${stringify(response.invalid_entries)}</pre>`
-    : `<p style="color: #9ca3af; text-align: center;">✓ No invalid entries</p>`;
+  const invalidEntriesDiv = document.getElementById("invalid-entries");
+  const duplicateEdgesDiv = document.getElementById("duplicate-edges");
 
-  const duplicateMarkup = response.duplicate_edges.length > 0
-    ? `<pre>${stringify(response.duplicate_edges)}</pre>`
-    : `<p style="color: #9ca3af; text-align: center;">✓ No duplicate edges</p>`;
+  if (response.invalid_entries && response.invalid_entries.length > 0) {
+    invalidEntriesDiv.innerHTML = `
+      <h3>Invalid Entries</h3>
+      ${response.invalid_entries
+        .map(item => `<div class="error-item">${item}</div>`)
+        .join("")}
+    `;
+  } else {
+    invalidEntriesDiv.innerHTML = `
+      <h3>Invalid Entries</h3>
+      <div style="color: var(--success); font-size: 12px; padding: 12px; text-align: center;">
+        None found
+      </div>
+    `;
+  }
 
-  const errorsContent = document.getElementById("errors-content");
-  errorsContent.innerHTML = `
-    <div class="errors-grid">
-      <div class="error-box">
-        <h4>❌ Invalid Entries</h4>
-        ${invalidMarkup}
+  if (response.duplicate_edges && response.duplicate_edges.length > 0) {
+    duplicateEdgesDiv.innerHTML = `
+      <h3>Duplicate Edges</h3>
+      ${response.duplicate_edges
+        .map(item => `<div class="error-item">${item}</div>`)
+        .join("")}
+    `;
+  } else {
+    duplicateEdgesDiv.innerHTML = `
+      <h3>Duplicate Edges</h3>
+      <div style="color: var(--success); font-size: 12px; padding: 12px; text-align: center;">
+        None found
       </div>
-      <div class="error-box">
-        <h4>⚠️ Duplicate Edges</h4>
-        ${duplicateMarkup}
-      </div>
-    </div>
-  `;
+    `;
+  }
 }
 
-// ===== Main Analyze Function =====
 async function analyze() {
   const values = nodeInput.value
     .split("\n")
     .map((line) => line.trimEnd())
     .filter((line) => line.length > 0);
 
-  statusEl.textContent = "⚙️ Analyzing...";
-  statusEl.style.color = "#2563eb";
+  statusEl.textContent = "Analyzing...";
+  statusEl.style.color = "#6366f1";
   submitBtn.disabled = true;
 
   try {
     const response = await fetch("/bfhl", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ data: values })
     });
 
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.error || "Request failed.");
+      throw new Error(result.error || "Request failed");
     }
 
-    // Update all sections
     buildSummaryCards(result);
     renderHierarchies(result);
     renderErrors(result);
     rawJsonEl.textContent = stringify(result);
     
-    statusEl.textContent = "✅ Analysis complete!";
+    statusEl.textContent = "Analysis complete!";
     statusEl.style.color = "#10b981";
     
-    // Switch to hierarchies tab
-    document.querySelector('[data-tab="hierarchies"]').click();
+    switchTab("hierarchies");
   } catch (error) {
-    statusEl.textContent = "❌ " + (error.message || "Unable to process the request.");
+    statusEl.textContent = `${error.message || "Failed to analyze"}`;
     statusEl.style.color = "#ef4444";
     summaryCardsEl.innerHTML = "";
     hierarchiesEl.innerHTML = "";
@@ -179,7 +185,6 @@ async function analyze() {
   }
 }
 
-// ===== Event Listeners =====
 sampleBtn.addEventListener("click", () => {
   nodeInput.value = sampleInput;
   nodeInput.focus();
@@ -187,7 +192,6 @@ sampleBtn.addEventListener("click", () => {
 
 submitBtn.addEventListener("click", analyze);
 
-// ===== Auto-analyze on page load =====
 window.addEventListener("load", () => {
   setTimeout(analyze, 100);
 });
