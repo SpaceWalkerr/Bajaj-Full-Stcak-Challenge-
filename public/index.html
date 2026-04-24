@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SRM Full Stack Challenge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Code+Pro:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">SRM Challenge Workspace</p>
+        <h1>Hierarchy Analyzer</h1>
+        <p class="hero-copy">
+          Paste node relationships, submit them to <code>/bfhl</code>, and inspect the
+          generated trees, cycles, duplicates, and summary in one place.
+        </p>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel-input">
+          <div class="panel-head">
+            <h2>Input</h2>
+            <button id="sample-btn" type="button" class="secondary-btn">Load Sample</button>
+          </div>
+          <label for="node-input" class="field-label">One edge per line</label>
+          <textarea id="node-input" spellcheck="false">A->B
+A->C
+B->D</textarea>
+          <button id="submit-btn" type="button" class="primary-btn">Analyze</button>
+          <p class="helper-text">
+            Valid format is <code>X-&gt;Y</code> where both nodes are single uppercase letters.
+          </p>
+          <div id="status" class="status" aria-live="polite"></div>
+        </section>
+
+        <section class="panel panel-output">
+          <div class="panel-head">
+            <h2>Response</h2>
+          </div>
+          <div id="summary-cards" class="summary-cards"></div>
+          <div id="hierarchies" class="hierarchy-list"></div>
+          <div class="response-block">
+            <h3>Raw JSON</h3>
+            <pre id="raw-json">{}</pre>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
