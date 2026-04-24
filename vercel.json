@@ -11,10 +11,5 @@
       "src": "/(.*)",
       "dest": "server.js"
     }
-  ],
-  "env": {
-    "USER_ID": "@USER_ID",
-    "EMAIL_ID": "@EMAIL_ID",
-    "COLLEGE_ROLL_NUMBER": "@COLLEGE_ROLL_NUMBER"
-  }
+  ]
 }
